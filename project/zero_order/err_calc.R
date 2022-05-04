@@ -1,4 +1,4 @@
-source('/Users/huongvu/Desktop/PCR_Desktop/Scripts/fitting_rn_curves/find_important_cycles.R')
+source('/Users/huongvu/Desktop/EECS227C/project/zero_order/find_important_cycles.R')
 
 calc_a_err = function(rn_df, sigmoid_df,param_args){
   # we compare the difference in y between the given cycles in param args
@@ -115,10 +115,21 @@ combine_err_func = function(rn_df, sigmoid_df){
 
 calc_mse = function(truth, prediction){
   tryCatch({
-    mse = mean((truth - prediction)^2)
+    rmse = mean((truth - prediction)^2)
   },warning = function(w){
     cat(w)
   })
   
-  return(mse)
+  return(rmse)
 }
+
+calc_rmse = function(truth, prediction){
+  tryCatch({
+    rmse = sqrt(mean((truth - prediction)^2))
+  },warning = function(w){
+    cat(w)
+  })
+  
+  return(rmse)
+}
+

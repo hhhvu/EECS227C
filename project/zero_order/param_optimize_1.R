@@ -1,5 +1,7 @@
-source('/Users/huongvu/Desktop/PCR_Desktop/Scripts/fitting_rn_curves/err_calc.R')
-source('/Users/huongvu/Desktop/PCR_Desktop/Scripts/fitting_rn_curves/optimize_utils.R')
+library(dplyr)
+source('/Users/huongvu/Desktop/EECS227C/project/zero_order/err_calc.R')
+source('/Users/huongvu/Desktop/EECS227C/project/zero_order/optimize_utils.R')
+source('/Users/huongvu/Desktop/EECS227C/project/zero_order/find_important_cycles.R')
 
 err_funcs = c(combine_err_func = combine_err_func,
               calc_mse = calc_mse)
@@ -19,7 +21,6 @@ optimize_param = function(target_err_thres = 0.05,
   # param_step = 1
   # target_param = 'k'
 
-  
   flag = TRUE
   max_cycle = max(rn_df$cycle_no)
   names(param_set) = c('a','b','r','k','s','t')
@@ -135,7 +136,7 @@ gridSearch = function(rn_df, max_cycle, combined_err_thres, target_err_thres,
   t = param_set[['t']]
   # first optimize b
   for(p in param_order){
-    cat('Optimizing param', p, ':\n')
+    # cat('Optimizing param', p, ':\n')
     if(p == 'a'){
       param_args = c(max(1,t-5),min(max_cycle,t+5))
     }else if(p == 'r'){
@@ -168,17 +169,17 @@ gridSearch = function(rn_df, max_cycle, combined_err_thres, target_err_thres,
   shift = find_shift(rn_df = rn_df, 
                      sigmoid_df = sigmoid_df,
                      inflection_cycle = t)
-  param_set[['s']] = shift
+  param_set[['s']] = -shift
   sigmoid_df$y = sigmoid_df$y - shift
-  err = combine_err_func(rn_df, sigmoid_df)
-  
-  return(c(param_set, err))
+  rmse = calc_rmse(rn_df$normalized, sigmoid_df$y)
+
+  return(c(param_set,rmse))
 }
 
-fitting_sigmoid = function(index, combined_err_thres, target_err_thres,
+fitting_sigmoid = function(data, index, combined_err_thres, target_err_thres,
                            param_thres, param_step,
                            param_set, param_order){
-  cat('Working on sample_target_idx = ', index,'\n')
+  # cat('Working on sample_target_idx = ', index,'\n')
   rn_df = data %>% filter(sample_target_idx == index)
   if(unique(rn_df$baseline_end) > 31){
     # we want to fit a straight line
@@ -199,3 +200,6 @@ fitting_sigmoid = function(index, combined_err_thres, target_err_thres,
   }
   return(c(index,optimized_result))
 }
+
+
+
